@@ -1,0 +1,31 @@
+[I 250522 18:51:05 ws_feed:51] on open
+[I 250522 18:51:20 smartConnect:124] in pool
+[I 250522 19:23:20 ws_feed:51] on open
+[I 250522 19:31:30 smartConnect:124] in pool
+[I 250522 19:33:00 ws_feed:51] on open
+[I 250522 19:36:15 smartConnect:124] in pool
+[I 250522 19:39:49 smartConnect:124] in pool
+[I 250522 19:39:50 ws_feed:51] on open
+[I 250522 19:39:50 smartConnect:124] in pool
+[I 250522 19:39:50 smartConnect:124] in pool
+[E 250522 19:39:50 smartWebSocketV2:316] Connection to remote host was lost.
+[W 250522 19:39:50 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 250522 19:39:50 ws_feed:51] on open
+[I 250522 19:39:54 ws_feed:51] on open
+[I 250522 19:39:54 ws_feed:51] on open
+[E 250522 19:39:54 smartWebSocketV2:316] Connection to remote host was lost.
+[E 250522 19:39:54 smartWebSocketV2:316] Connection to remote host was lost.
+[W 250522 19:39:54 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
+[W 250522 19:39:54 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 250522 19:39:54 smartConnect:124] in pool
+[I 250522 19:39:54 smartConnect:124] in pool
+[I 250522 19:39:54 smartConnect:124] in pool
+[I 250522 19:39:54 ws_feed:51] on open
+[E 250522 19:39:54 smartWebSocketV2:316] Connection to remote host was lost.
+[W 250522 19:39:54 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
+[E 250522 19:39:54 smartWebSocketV2:316] Connection to remote host was lost.
+[W 250522 19:39:54 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
+[I 250522 19:43:00 ws_feed:51] on open
+[I 250522 19:43:59 ws_feed:51] on open
+[I 250522 19:45:00 ws_feed:51] on open
+[I 250522 19:48:00 ws_feed:51] on open

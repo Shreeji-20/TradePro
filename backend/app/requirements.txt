@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+httpx
+smartapi-python
+python-jose
+python-dotenv
+supabase
