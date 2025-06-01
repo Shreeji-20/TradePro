@@ -42,7 +42,7 @@ import {
 const StockOrder = () => {
   const [isAddingStock, setIsAddingStock] = useState(false);
   const stocksList = useSelector((state) => state.stockOrder.stocksList);
-  const liveData = useSelector((state) => state.liveData.data[index.token]);
+  const liveData = useSelector((state) => state.liveData.data);
   const dispatch = useDispatch();
 
   const exchange_map_type = {
@@ -52,9 +52,10 @@ const StockOrder = () => {
     BFO: 4,
   };
 
+  // Check and plce due orders
   useEffect(() => {
     const interval = setInterval(() => {
-      dispatch(checkAndPlaceDueOrders());
+      dispatch(checkAndPlaceDueOrders(liveData));
     }, 1000); // every 5 seconds
 
     return () => clearInterval(interval);
@@ -66,7 +67,7 @@ const StockOrder = () => {
       quantity: "",
       orderType: "MARKET",
       priceType: "ltp",
-      limitPrice: "",
+      limitPrice: "100.123",
       numOfLimits: "1",
       expiryMinutes: "30",
       priceUpdateInterval: "5",
@@ -89,7 +90,6 @@ const StockOrder = () => {
       priceUpdateInterval: parseInt(data.priceUpdateInterval, 10),
       client_code: sessionStorage.getItem("email"),
     };
-    console.log(numericData.timeToPlace);
 
     const qtyPerLimit = Math.floor(
       numericData.quantity / numericData.numOfLimits
@@ -102,10 +102,10 @@ const StockOrder = () => {
       qtyPerLimit,
       remainingQty,
       status: "Pending",
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       orderId: "",
+      token: "",
     };
-    console.log(newStock);
 
     const res = await fetch("http://localhost:8000/trade/subscribe", {
       method: "POST",
@@ -113,7 +113,7 @@ const StockOrder = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        symbol: newStock.stockSymbol.trim() + "-EQ",
+        symbol: newStock.stockSymbol.trim(),
         mode: 3,
         exchangeType: exchange_map_type[newStock.exchange],
         correlation_id: `${newStock.stockSymbol}add123`,
@@ -122,16 +122,20 @@ const StockOrder = () => {
       }),
     });
 
-    dispatch(addStock(newStock));
+    const res_json = await res.json();
+    console.log("Subscription res : ", res_json);
+    dispatch(addStock({ ...newStock, token: res_json.token }));
     toast.success(`Added ${data.stockSymbol} to order list`);
     setIsAddingStock(false);
     form.reset();
   };
 
+  // Update orders
   useEffect(() => {
     const intervalIds = stocksList.map((stock) =>
       setInterval(() => {
-        dispatch(updateStock({ id: stock.id, socket_data: livedata }));
+        console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
+        dispatch(updateStock({ id: stock.id, socketData: liveData }));
       }, stock.priceUpdateInterval * 1000)
     );
 
@@ -140,10 +144,12 @@ const StockOrder = () => {
     };
   }, [stocksList, dispatch]);
 
+  // Convert to market order
   useEffect(() => {
     const timeoutIds = stocksList.map((stock) => {
       if (stock.status === "Pending") {
         return setTimeout(() => {
+          console.log(`Converting to market ${stock.stockSymbol}`);
           dispatch(convertToMarketOrder(stock.id));
         }, stock.expiryMinutes * 60 * 1000);
       }
@@ -389,7 +395,7 @@ const StockOrder = () => {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>
-                            Convert to Market After (minutes)
+                            Convert to Market After (seconds)
                           </FormLabel>
                           <FormControl>
                             <Input
@@ -410,7 +416,7 @@ const StockOrder = () => {
                       name="priceUpdateInterval"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price Update Interval (minutes)</FormLabel>
+                          <FormLabel>Price Update Interval (seconds)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -469,7 +475,7 @@ const StockOrder = () => {
                         <TableCell>{stock.quantity}</TableCell>
                         <TableCell>{stock.orderType}</TableCell>
                         <TableCell>
-                          ₹{stock.limitPrice.toFixed(2)}
+                          ₹{stock.limitPrice}
                           {stock.currentPrice && (
                             <div className="text-xs text-gray-500">
                               Current: ₹{stock.currentPrice.toFixed(2)}

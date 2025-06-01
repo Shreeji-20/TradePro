@@ -19,7 +19,7 @@ class OrderRequest(BaseModel):
     quantity: int
     side: str  # "BUY" or "SELL"
     order_type: str
-    price_type: str
+    # price_type: str
 
 class LoginRequest(BaseModel):  
     email: str
@@ -104,6 +104,7 @@ def login(demat: LoginRequest):
         # print(e)
         return {"error":f"{e}","code":400}
 
+
 @trading_router.post("/place-order")
 def place_order(order: OrderRequest):
     try:
@@ -114,17 +115,18 @@ def place_order(order: OrderRequest):
             qty=order.quantity,
             side=order.side,
             order_type=order.order_type,
-            price_type=order.price_type,
+            # price_type=order.price_type,
             product_type = "DELIVERY"
             
         )
         print("Result : ",result)
-        if 'code' in result and result['code'] == 400:
+        if result is not None and 'code' in result and result['code'] == 400:
             raise Exception(result['error'])
         return {"message": "Order placed", "order_id": result}
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=400, detail=str(e))
+
 
 @trading_router.post("/profile")
 def get_profile(email:LoginRequest):
@@ -139,6 +141,7 @@ def get_profile(email:LoginRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     
+    
 @trading_router.get("/orderbook")
 def get_orderbook(email:LoginRequest):
     try:
@@ -150,6 +153,7 @@ def get_orderbook(email:LoginRequest):
         return {"message": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) 
+    
     
 @trading_router.get("/positions")
 def get_positions(email:LoginRequest):
@@ -163,6 +167,7 @@ def get_positions(email:LoginRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) 
     
+    
 @trading_router.get("/holdings")
 def get_holdings(email:LoginRequest):
     try:
@@ -174,6 +179,7 @@ def get_holdings(email:LoginRequest):
         return {"message": result}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e)) 
+    
     
 @trading_router.post("/start-feed")
 def start_feed(email:LoginRequest):
@@ -192,6 +198,7 @@ def start_feed(email:LoginRequest):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @trading_router.get("/websocketdata")
 def live_data():
     try:
@@ -205,6 +212,22 @@ def live_data():
            return {"message":"Data error","code":201}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+    
+    
+@trading_router.get("/websocketdata_raw")
+def raw_live_data():
+    try:
+        global web_socket
+        if not web_socket:
+            return {"code":300}
+        data = web_socket.live_data_dict
+        if data:
+            return {"data":data,"code":200}
+        else:
+           return {"message":"Data error","code":201}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    
     
     
 @trading_router.get("/terminatesocket")
@@ -235,9 +258,9 @@ def socketsubscribe(data:WebsocketSubscribe):
             ]
             web_socket.sws.subscribe(data.correlation_id,data.mode,token_list)
             web_socket.subscribed_token_list.append(tokens[0])
-            return {"message":f"Successfully subscribed token:{tokens[0]} for socket data","code":200}
+            return {"message":f"Successfully subscribed token:{tokens[0]} for socket data","token":tokens[0],"code":200}
         else:
-            return {"message":f"token:{tokens[0]} is already Subscribed","code":201}
+            return {"message":f"token:{tokens[0]} is already Subscribed","code":201,"token":tokens[0]}
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -266,7 +289,6 @@ def add_order(order: NewOrder):
             "limit_count":order.numOfLimits,
             "order_timeout":order.expiryMinutes,
             "price_refresh":order.priceUpdateInterval,
-            # "created_at":None,
             "client_id":order.client_code,
             "remainingQty":order.remainingQty,
             "status":order.status,
@@ -280,6 +302,7 @@ def add_order(order: NewOrder):
     except Exception as e:
         return {"error":e,"code":400}
         # raise HTTPException(status_code=400, detail=str(e))
+        
         
 @trading_router.post("/deleteorder")
 def delete_order(id:OrderKey):

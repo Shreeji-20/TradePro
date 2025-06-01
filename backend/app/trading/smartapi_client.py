@@ -50,13 +50,13 @@ class SmartAPIClient:
         else:
             raise Exception(f"Symbol {symbol_name} not found!")
 
-    def place_order(self, symbol, qty, side, order_type="MARKET", product_type="DELIVERY"):
+    def place_order(self, symbol, qty, side, price="0",order_type="MARKET", product_type="DELIVERY"):
         try:
             symbol_token = self.get_symbol_token(symbol)
-            if order_type=="MARKET":
-                price = "0"
-            else:
-                price = "100"
+            # if order_type=="MARKET":
+            #     price = "0"
+            # else:
+            #     price = "100"
             params = {
                 "variety": "NORMAL",
                 "tradingsymbol": symbol,
@@ -66,13 +66,13 @@ class SmartAPIClient:
                 "ordertype":order_type,
                 "producttype": product_type,
                 "duration": "DAY",
-                "price": "0",
+                "price": price,
                 "squareoff": "0",
                 "stoploss": "0",
                 "quantity": f"{qty}"
             }
             order = self.obj.placeOrder(params)
-            print(order)
+            print("order : ", order)
             return order
         except Exception as e:
           return {"error":f"{e}","code":400}

@@ -21,10 +21,11 @@ export const stockOrderSlice = createSlice({
         (stock) => stock.id === action.payload.id
       );
       if (index !== -1) {
-        const limitPrice = action.payload.livedata.data[index.token]
+        const limitPrice =
+          action.payload.socketData[state.stocksList[index].token];
         state.stocksList[index] = {
           ...state.stocksList[index],
-          ...action.payload.price,
+          limitPrice: limitPrice["last_traded_price"] / 100,
         };
       }
     },
@@ -33,6 +34,7 @@ export const stockOrderSlice = createSlice({
       if (stock) {
         stock.orderType = "MARKET";
         stock.price = null; // Optional: remove price field if not relevant for market orders
+        stock.status = "Completed";
       }
     },
     setAllStocks: (state, action) => {
@@ -51,37 +53,40 @@ export const {
 
 export default stockOrderSlice.reducer;
 
-export const checkAndPlaceDueOrders = () => async (dispatch, getState) => {
-  const { stocksList } = getState().stockOrder;
-  const now = new Date();
+export const checkAndPlaceDueOrders =
+  (liveData) => async (dispatch, getState) => {
+    const { stocksList } = getState().stockOrder;
+    const now = new Date();
+    for (const stock of stocksList) {
+      if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
+        try {
+          const response = await fetch(
+            "http://localhost:8000/trade/place-order",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: sessionStorage.getItem("email"),
+                order_type: stock.orderType,
+                side: stock.side,
+                symbol: stock.stockSymbol,
+                quantity: stock.qtyPerLimit,
+              }),
+            }
+          );
+          const data = await response.json();
 
-  for (const stock of stocksList) {
-    if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
-      try {
-        console.log(stock);
-        const response = await fetch(
-          "http://localhost:8000/trade/place-order",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: sessionStorage.getItem("email"),
-              order_type: stock.orderType,
-              side: stock.side,
-              symbol: stock.stockSymbol,
-              quantity: stock.quantity,
-            }),
-          }
-        );
-        const data = await response.json();
-        console.log(data);
-        // Assuming response includes orderId
-        dispatch(
-          updateStock({ id: stock.id, updates: { orderId: data.orderId } })
-        );
-      } catch (err) {
-        console.error(`Failed to place order for ${stock.symbol}:`, err);
+          // Assuming response includes orderId
+          dispatch(
+            updateStock({
+              id: stock.id,
+              updates: { orderId: data.orderId },
+              socketData: liveData,
+            })
+          );
+        } catch (err) {
+          console.error(`Failed to place order for ${stock.symbol}:`, err);
+        }
       }
     }
-  }
-};
+  };
