@@ -37,8 +37,8 @@ export const login = async (formdata) => {
   });
 
   if (res.ok && data.access_token) {
-    sessionStorage.setItem("access_token", data.access_token);
-    sessionStorage.setItem("email", formdata.email);
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("email", formdata.email);
     return { status: true };
   } else {
     console.error("Login failed", data.error);

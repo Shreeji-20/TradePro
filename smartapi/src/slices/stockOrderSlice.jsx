@@ -31,6 +31,7 @@ export const stockOrderSlice = createSlice({
     },
     convertToMarketOrder: (state, action) => {
       const stock = state.stocksList.find((s) => s.id === action.payload);
+      console.log(`Updating ${stock.stockSymbol} to Market`);
       if (stock) {
         stock.orderType = "MARKET";
         stock.price = null; // Optional: remove price field if not relevant for market orders
@@ -60,27 +61,32 @@ export const checkAndPlaceDueOrders =
     for (const stock of stocksList) {
       if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
         try {
+          console.log(
+            "LTP : ",
+            `${liveData[stock.token]["last_traded_price"] / 100}`
+          );
           const response = await fetch(
             "http://localhost:8000/trade/place-order",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                email: sessionStorage.getItem("email"),
+                email: localStorage.getItem("email"),
                 order_type: stock.orderType,
                 side: stock.side,
                 symbol: stock.stockSymbol,
                 quantity: stock.qtyPerLimit,
+                price: `${liveData[stock.token]["last_traded_price"] / 100}`,
               }),
             }
           );
           const data = await response.json();
-
+          console.log("orderplaces : ", data);
           // Assuming response includes orderId
           dispatch(
             updateStock({
               id: stock.id,
-              updates: { orderId: data.orderId },
+              updates: { orderId: data.order_id },
               socketData: liveData,
             })
           );

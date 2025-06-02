@@ -16,11 +16,11 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   useLiveData();
   const PrivateRoute = ({ children }) => {
-    const token = sessionStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
     return token ? children : <Navigate to="/login" replace />;
   };
   useEffect(() => {
-    const token = sessionStorage.getItem("access_token");
+    const token = localStorage.getItem("access_token");
     setIsAuthenticated(!!token); // Check if token exists on load
   }, []);
 

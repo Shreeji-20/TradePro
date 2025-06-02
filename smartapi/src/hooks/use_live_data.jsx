@@ -29,7 +29,7 @@ export const useLiveData = () => {
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ email: sessionStorage.getItem("email") }),
+              body: JSON.stringify({ email: localStorage.getItem("email") }),
             }
           );
         }
@@ -38,7 +38,8 @@ export const useLiveData = () => {
       }
     };
 
-    const interval = setInterval(fetchLiveData, 1000); // Fetch every second
+    const interval = setInterval(fetchLiveData, 500); // Fetch every second
+    console.log("Started fetching live data");
     return () => clearInterval(interval);
   }, []);
 };

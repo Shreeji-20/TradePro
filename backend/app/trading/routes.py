@@ -19,6 +19,7 @@ class OrderRequest(BaseModel):
     quantity: int
     side: str  # "BUY" or "SELL"
     order_type: str
+    price:str
     # price_type: str
 
 class LoginRequest(BaseModel):  
@@ -111,12 +112,12 @@ def place_order(order: OrderRequest):
         print(order)
         client = get_client_by_email(order.email)
         result = client.place_order(
+            order_type=order.order_type,
+            side=order.side,
             symbol=order.symbol,
             qty=order.quantity,
-            side=order.side,
-            order_type=order.order_type,
-            # price_type=order.price_type,
-            product_type = "DELIVERY"
+            product_type = "DELIVERY",
+            price = order.price
             
         )
         print("Result : ",result)

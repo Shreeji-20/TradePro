@@ -43,8 +43,8 @@ const StockOrder = () => {
   const [isAddingStock, setIsAddingStock] = useState(false);
   const stocksList = useSelector((state) => state.stockOrder.stocksList);
   const liveData = useSelector((state) => state.liveData.data);
+  const liveDataRef = useRef(liveData);
   const dispatch = useDispatch();
-
   const exchange_map_type = {
     NSE: 1,
     NFO: 2,
@@ -52,10 +52,16 @@ const StockOrder = () => {
     BFO: 4,
   };
 
+  useEffect(() => {
+    liveDataRef.current = liveData;
+  }, [liveData]);
+
   // Check and plce due orders
   useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(checkAndPlaceDueOrders(liveData));
+    const interval = setInterval(async () => {
+      if (Array.isArray(liveDataRef.current) && liveDataRef.current.length > 0)
+        console.log(liveDataRef.current)
+        dispatch(checkAndPlaceDueOrders(liveDataRef.current));
     }, 1000); // every 5 seconds
 
     return () => clearInterval(interval);
@@ -88,7 +94,7 @@ const StockOrder = () => {
       numOfLimits: parseInt(data.numOfLimits, 10),
       expiryMinutes: parseInt(data.expiryMinutes, 10),
       priceUpdateInterval: parseInt(data.priceUpdateInterval, 10),
-      client_code: sessionStorage.getItem("email"),
+      client_code: localStorage.getItem("email"),
     };
 
     const qtyPerLimit = Math.floor(
@@ -118,7 +124,7 @@ const StockOrder = () => {
         exchangeType: exchange_map_type[newStock.exchange],
         correlation_id: `${newStock.stockSymbol}add123`,
         exchange: newStock.exchange,
-        email: sessionStorage.getItem("email"),
+        email: localStorage.getItem("email"),
       }),
     });
 
