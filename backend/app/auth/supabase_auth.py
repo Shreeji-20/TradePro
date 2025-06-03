@@ -1,19 +1,17 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel , UUID4
 from app.db.supabase_client import supabase
 import requests
-
 router = APIRouter()
 
 class SignupRequest(BaseModel):
     email: str
     password: str
-    Angelone_clientId: str
-    Angelone_apiKey: str
-    Angelone_totp: str
-    Angelone_pin: str
-    name: str
-    rememberMe: bool
+    clientId: str
+    apikey: str
+    totp: str
+    pin: str
+    id:str
     
 
 class LoginRequest(BaseModel):
@@ -30,27 +28,35 @@ def signup(data: SignupRequest):
         "password": data.password
     })
 
-    print("Before : ",data)
-    payload = data.dict()
-    print("Payload : ",payload)
-    payload.pop("password",None)
-    
-    # response2 = supabase.table('Angelone_creds').insert({
-    #     "email":data.email,
-    #     "clientId":data.Angelone_clientId,
-    #     "apikey":data.Angelone_apiKey,
-    #     "totp":data.Angelone_totp,
-    #     "pin":data.Angelone_pin,
-    #     "auth_token":"",
-    #     "refresh_token":"",
-    #     "feed_token":"",
-    #     "access_token":"",
-    #     "created_at":None
-    # }).execute()
+    print("res : ", response.json())
+    # if response.error:
+    #     print("Signup error:", response.error)
+    #     raise Exception(response["error"])
+    # else:
+    #     user = response.user
+    #     user_id = user.id  # Supabase auth user ID
+    # id = UUID4(data.id)
+    # payload = data.dict()
+    # payload.pop("password")
+    # payload['id'] = id
+    # payload['id'] = user_id
+    # print(response)
+    response2 = supabase.table('Angelone_creds').insert({
+        "email":data.email,
+        "clientId":data.clientId,
+        "apikey":data.apikey,
+        "totp":data.totp,
+        "pin":data.pin,
+        "auth_token":"",
+        "refresh_token":"",
+        "feed_token":"",
+        "access_token":"",
+        "created_at":None
+    }).execute()
 
-    response2 = supabase.table('Angelone_creds').insert(
-        payload
-    ).execute()
+    # response2 = supabase.table('Angelone_creds').insert(
+    #     payload
+    # ).execute()
     
     if "error" in response:
         raise HTTPException(status_code=400, detail=response["error"]["message"])
@@ -68,6 +74,7 @@ def login(data: LoginRequest):
         })
         if not response.session:
             raise HTTPException(status_code=400, detail="Invalid credentials")
+        
         res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email})
         res = res.json()
 
@@ -76,9 +83,7 @@ def login(data: LoginRequest):
         # else:
         user = supabase.auth.get_user(response.session.access_token)
         print(user.user)
-        
         return {"access_token": response.session.access_token}
-    
     except Exception as e:
         return {"error":f"{e}","code":400}
 
@@ -86,16 +91,3 @@ def login(data: LoginRequest):
 def get_user_email(access_token: accessToken):
     user = supabase.auth.get_user(access_token)
     return user.user if user.user else None
-
-
-# @router.post("/addclient")
-# def add_angelone_client():
-#     try:
-#         response = supabase.table("Angelone_creds").update({
-#             "refresh_token":self.obj.refresh_token,
-#             "access_token":self.obj.access_token,
-#             "created_at":datetime.now()
-#         }).eq("email",email).execute()
-#         if "error" in response:
-#             raise HTTPException(status_code=400, detail=response["error"]["message"])
-#     pass

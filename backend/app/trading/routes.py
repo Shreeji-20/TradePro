@@ -6,7 +6,6 @@ from app.db.supabase_client import supabase
 import traceback
 from app.trading.ws_feed import Websocket
 from threading import Thread
-# from app.db.supabase_client import supabase
 import json
 from typing import Optional
 # trading_router = APIRouter(dependencies=[Depends(JWTBearer())])  # << secure all routes
@@ -17,11 +16,10 @@ class OrderRequest(BaseModel):
     email: str
     symbol: str
     quantity: int
-    side: str  # "BUY" or "SELL"
+    side: str  
     order_type: str
     price:str
-    # price_type: str
-
+   
 class LoginRequest(BaseModel):  
     email: str
     
@@ -62,13 +60,6 @@ class OrderKey(BaseModel):
 class GainersLosers(BaseModel):
     datatype:str
     
-#     {
-#     "datatype":"PercOIGainers", // Type of Data you want(PercOILosers/PercOIGainers/PercPriceGainers/PercPriceLosers)
-#     "expirytype":"NEAR" // Expiry Type (NEAR/NEXT/FAR)
-# } 
-
-# def websocket_runner(feed_token,client_code,auth_token,apikey):
-#     start_websocket(feed_token,client_code,auth_token,apikey)
     
 def get_client_by_email(email: str):
     response = supabase.table("Angelone_creds").select("*").eq("email", email).execute()
