@@ -20,8 +20,10 @@ export const register = async (formdata) => {
 export const login = async (formdata) => {
   const res = await fetch("http://localhost:8000/auth/login", {
     method: "POST",
+    credentials: "include" ,
     headers: {
       "Content-Type": "application/json",
+      credentials: "include", 
     },
     body: JSON.stringify(formdata),
   });
@@ -31,6 +33,7 @@ export const login = async (formdata) => {
 
   const response = await fetch("http://localhost:8000/trade/start-feed", {
     method: "POST",
+    credentials: "include" ,
     headers: {
       "Content-Type": "application/json",
     },
