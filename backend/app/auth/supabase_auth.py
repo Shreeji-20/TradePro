@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel , UUID4
+from uuid import UUID
 from app.db.supabase_client import supabase
 import requests
 router = APIRouter()
@@ -11,9 +12,7 @@ class SignupRequest(BaseModel):
     apikey: str
     totp: str
     pin: str
-    id:str
     
-
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -23,47 +22,29 @@ class accessToken(BaseModel):
 
 @router.post("/signup")
 def signup(data: SignupRequest):
-    response = supabase.auth.sign_up({
-        "email": data.email,
-        "password": data.password
-    })
+    try:
+        response = supabase.auth.sign_up({
+            "email": data.email,
+            "password": data.password
+        })
+        response = response.dict()
+        user = response['user']
 
-    print("res : ", response.json())
-    # if response.error:
-    #     print("Signup error:", response.error)
-    #     raise Exception(response["error"])
-    # else:
-    #     user = response.user
-    #     user_id = user.id  # Supabase auth user ID
-    # id = UUID4(data.id)
-    # payload = data.dict()
-    # payload.pop("password")
-    # payload['id'] = id
-    # payload['id'] = user_id
-    # print(response)
-    response2 = supabase.table('Angelone_creds').insert({
-        "email":data.email,
-        "clientId":data.clientId,
-        "apikey":data.apikey,
-        "totp":data.totp,
-        "pin":data.pin,
-        "auth_token":"",
-        "refresh_token":"",
-        "feed_token":"",
-        "access_token":"",
-        "created_at":None
-    }).execute()
-
-    # response2 = supabase.table('Angelone_creds').insert(
-    #     payload
-    # ).execute()
-    
-    if "error" in response:
-        raise HTTPException(status_code=400, detail=response["error"]["message"])
-    if "error" in response2:
-        raise HTTPException(status_code=400, detail=response2["error"]["message"])
-    
-    return {"message": "User signed up"}
+        payload = data.dict()
+        payload['id'] = str(user["id"])
+        payload.pop("password")
+        response2 = supabase.table('Angelone_creds').insert(
+            payload
+        ).execute()
+        
+        if "error" in response:
+            raise HTTPException(status_code=400, detail=response["error"]["message"])
+        if "error" in response2:
+            raise HTTPException(status_code=400, detail=response2["error"]["message"])
+        
+        return {"message": "User signed up"}
+    except Exception as e:
+        return {"error":f"{e}","code":400}
 
 @router.post("/login")
 def login(data: LoginRequest):
@@ -77,8 +58,8 @@ def login(data: LoginRequest):
         
         res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email})
         res = res.json()
-
-        if res.get('code') == 400:
+        print("trade login :", res)
+        if 'code' in res and res.get('code') == 400:
             raise Exception(res.get('error'))
         # else:
         user = supabase.auth.get_user(response.session.access_token)

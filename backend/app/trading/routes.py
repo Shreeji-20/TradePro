@@ -82,7 +82,7 @@ def get_client_by_email(email: str):
 @trading_router.post("/login")
 def login(demat: LoginRequest):
     try: 
-        response = supabase.table("Angelone_creds").select('*').eq("email",demat.email).execute()
+        response = supabase.table("Angelone_creds").select('*').eq("email","dhruvisoni2712@gmail.com").execute()
         data = response.data[0]
         client = SmartAPIClient(data['clientId'],data['pin'],data['totp'],data['apikey'])
       
@@ -94,6 +94,7 @@ def login(demat: LoginRequest):
             raise Exception(res.get("error"))
     except Exception as e:
         # print(e)
+        print(traceback.format_exc())
         return {"error":f"{e}","code":400}
 
 
