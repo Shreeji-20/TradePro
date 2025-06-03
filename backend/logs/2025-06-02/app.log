@@ -2566,3 +2566,12 @@
 [W 250602 11:37:52 smartWebSocketV2:319] Attempting to resubscribe/reconnect (Attempt 1)...
 [I 250602 11:38:03 ws_feed:51] on open
 [I 250602 11:38:26 smartConnect:124] in pool
+[E 250602 15:56:01 smartWebSocketV2:87] Invalid initialization parameters. Provide valid values for all the tokens.
+[I 250602 15:56:20 smartConnect:124] in pool
+[E 250602 15:56:20 smartWebSocketV2:87] Invalid initialization parameters. Provide valid values for all the tokens.
+[I 250602 15:56:40 smartConnect:124] in pool
+[E 250602 15:56:41 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/auth/angelbroking/user/v1/loginByPassword. Error: Client Is Block For Trading. URL: https://apiconnect.angelone.in/rest/auth/angelbroking/user/v1/loginByPassword, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '50:3e:aa:e8:1c:4b', 'Accept': 'application/json', 'X-PrivateKey': '', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'clientcode': '', 'password': '', 'totp': '734272'}, Response: {'success': False, 'message': 'Client Is Block For Trading', 'errorCode': 'AB1006', 'data': ''}
+[E 250602 15:56:41 smartWebSocketV2:87] Invalid initialization parameters. Provide valid values for all the tokens.
+[I 250602 15:57:55 smartConnect:124] in pool
+[E 250602 15:57:55 smartConnect:246] Error occurred while making a POST request to https://apiconnect.angelone.in/rest/auth/angelbroking/user/v1/loginByPassword. Error: Invalid clientcode parameter name. URL: https://apiconnect.angelone.in/rest/auth/angelbroking/user/v1/loginByPassword, Headers: {'Content-type': 'application/json', 'X-ClientLocalIP': '127.0.0.1', 'X-ClientPublicIP': '106.193.147.98', 'X-MACAddress': '50:3e:aa:e8:1c:4b', 'Accept': 'application/json', 'X-PrivateKey': '3AqHK4Yn', 'X-UserType': 'USER', 'X-SourceID': 'WEB'}, Request: {'clientcode': '', 'password': '', 'totp': '224815'}, Response: {'message': 'Invalid clientcode parameter name', 'errorcode': 'AB1048', 'status': False, 'data': None}
+[E 250602 15:57:55 smartWebSocketV2:87] Invalid initialization parameters. Provide valid values for all the tokens.

@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export const register = async (formdata) => {
+  console.log("Form Data : ", formdata)
   const res = await fetch("http://localhost:8000/auth/signup", {
     method: "POST",
     headers: {

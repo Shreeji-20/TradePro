@@ -1,11 +1,13 @@
 import MarketOverview from "../components/dashboard/MarketOverview";
 import IndexChart from "../components/dashboard/IndexChart";
-
+import {useLiveData} from "../hooks/use_live_data"
 const Dashboard = () => {
+  
   return (
+    
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* <DashboardHeader /> */}
-
+      <useLiveData />
       <main className="container mx-auto px-4 py-6 flex-1">
         <div className="animate-fade-in">
           <MarketOverview />

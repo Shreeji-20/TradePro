@@ -29,19 +29,28 @@ def signup(data: SignupRequest):
         "email": data.email,
         "password": data.password
     })
+
+    print("Before : ",data)
+    payload = data.dict()
+    print("Payload : ",payload)
+    payload.pop("password",None)
     
-    response2 = supabase.table('Angelone_creds').insert({
-        "clientId":data.Angelone_clientId,
-        "apikey":data.Angelone_apiKey,
-        "totp":data.Angelone_totp,
-        "pin":data.Angelone_pin,
-        "email":data.email,
-        "auth_token":"",
-        "refresh_token":"",
-        "feed_token":"",
-        "access_token":"",
-        "created_at":None
-    }).execute()
+    # response2 = supabase.table('Angelone_creds').insert({
+    #     "email":data.email,
+    #     "clientId":data.Angelone_clientId,
+    #     "apikey":data.Angelone_apiKey,
+    #     "totp":data.Angelone_totp,
+    #     "pin":data.Angelone_pin,
+    #     "auth_token":"",
+    #     "refresh_token":"",
+    #     "feed_token":"",
+    #     "access_token":"",
+    #     "created_at":None
+    # }).execute()
+
+    response2 = supabase.table('Angelone_creds').insert(
+        payload
+    ).execute()
     
     if "error" in response:
         raise HTTPException(status_code=400, detail=response["error"]["message"])

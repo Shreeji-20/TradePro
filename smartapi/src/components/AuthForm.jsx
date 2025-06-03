@@ -10,11 +10,11 @@ const AuthForm = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    clientId: "",
+    apikey: "",
+    totp: "",
     name: "",
-    Angelone_clientId: "",
-    Angelone_pin: "",
-    Angelone_apiKey: "",
-    Angelone_totp: "",
+    pin: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
@@ -66,12 +66,12 @@ const AuthForm = () => {
     e.preventDefault();
 
     if (!validateForm()) return;
-
+    
     const response = await (isLogin ? login(formData) : register(formData));
 
-    console.log(response);
+    
     if (response.status) {
-      navigate("/dashboard");
+      
       toast.success(
         `${isLogin ? "Login" : "Registration"} successful! Welcome${
           !isLogin ? `, ${formData.name}` : ""
@@ -84,25 +84,6 @@ const AuthForm = () => {
         duration: 3000,
       });
     }
-    // {
-    //   response.status &&
-    //     toast.success(
-    //       `${isLogin ? "Login" : "Registration"} successful! Welcome
-    //   ${!isLogin ? `, ${formData.name}` : ""}`,
-    //       {
-    //         duration: 3000,
-    //       }
-    //     );
-    //   navigate("/dashboard");
-    // }
-
-    // {
-    //   !response.status &&
-    //     toast.error(response.error || "Authentication failed", {
-    //       duration: 3000,
-    //     });
-    //   navigate("/login");
-    // }
 
     if (!isLogin) {
       setFormData({
@@ -162,16 +143,16 @@ const AuthForm = () => {
             {/* AngelOne Client ID */}
             <div className="space-y-2">
               <label
-                htmlFor="Angelone_id"
+                htmlFor="clientId"
                 className="text-sm font-medium text-gray-700 block"
               >
                 AngelOne Client ID
               </label>
               <input
-                id="Angelone_id"
-                name="Angelone_id"
+                id="clientId"
+                name="clientId"
                 type="text"
-                value={formData.Angelone_id}
+                value={formData.clientId}
                 onChange={handleChange}
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 placeholder="Enter your AngelOne client ID"
@@ -181,16 +162,16 @@ const AuthForm = () => {
             {/* AngelOne Password */}
             <div className="space-y-2">
               <label
-                htmlFor="Angelone_password"
+                htmlFor="pin"
                 className="text-sm font-medium text-gray-700 block"
               >
                 AngelOne Password
               </label>
               <input
-                id="Angelone_password"
-                name="Angelone_password"
+                id="pin"
+                name="pin"
                 type="password"
-                value={formData.Angelone_password}
+                value={formData.pin}
                 onChange={handleChange}
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 placeholder="Enter your AngelOne password"
@@ -200,16 +181,16 @@ const AuthForm = () => {
             {/* AngelOne API Key */}
             <div className="space-y-2">
               <label
-                htmlFor="Angelone_apikey"
+                htmlFor="apikey"
                 className="text-sm font-medium text-gray-700 block"
               >
                 AngelOne API Key
               </label>
               <input
-                id="Angelone_apikey"
-                name="Angelone_apikey"
+                id="apikey"
+                name="apikey"
                 type="text"
-                value={formData.Angelone_apikey}
+                value={formData.apikey}
                 onChange={handleChange}
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 placeholder="Enter your AngelOne API key"
@@ -219,16 +200,16 @@ const AuthForm = () => {
             {/* AngelOne TOTP */}
             <div className="space-y-2">
               <label
-                htmlFor="Angelone_totp"
+                htmlFor="totp"
                 className="text-sm font-medium text-gray-700 block"
               >
                 AngelOne TOTP
               </label>
               <input
-                id="Angelone_totp"
-                name="Angelone_totp"
+                id="totp"
+                name="totp"
                 type="text"
-                value={formData.Angelone_totp}
+                value={formData.totp}
                 onChange={handleChange}
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                 placeholder="Enter your AngelOne TOTP"

@@ -40,6 +40,6 @@ export const useLiveData = () => {
 
     const interval = setInterval(fetchLiveData, 500); // Fetch every second
     console.log("Started fetching live data");
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, []);
 };

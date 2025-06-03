@@ -14,7 +14,7 @@ import { useLiveData } from "./hooks/use_live_data";
 import StockOrder from "./pages/StockOrder";
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
-  useLiveData();
+  
   const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem("access_token");
     return token ? children : <Navigate to="/login" replace />;
