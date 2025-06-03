@@ -1,15 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from app.trading.smartapi_client import SmartAPIClient
-from app.auth.jwt_bearer import JWTBearer
 from app.db.supabase_client import supabase
 import traceback
 from app.trading.ws_feed import Websocket
 from threading import Thread
 import json
 from typing import Optional
-# trading_router = APIRouter(dependencies=[Depends(JWTBearer())])  # << secure all routes
-trading_router = APIRouter()  # << secure all routes
+from app.auth.jwt_bearer import JWTBearer
+trading_router = APIRouter(dependencies=[Depends(JWTBearer())])  # << secure all routes
+# trading_router = APIRouter()  # << secure all routes
 web_socket = None
 
 class OrderRequest(BaseModel):

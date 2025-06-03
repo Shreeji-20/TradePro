@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException ,Response
 from pydantic import BaseModel , UUID4
 from uuid import UUID
 from app.db.supabase_client import supabase
@@ -47,28 +47,37 @@ def signup(data: SignupRequest):
         return {"error":f"{e}","code":400}
 
 @router.post("/login")
-def login(data: LoginRequest):
+def login(response: Response,data: LoginRequest):
     try:
-        response = supabase.auth.sign_in_with_password({
+        login_response = supabase.auth.sign_in_with_password({
             "email": data.email,
             "password": data.password
         })
-        if not response.session:
+        if not login_response.session:
             raise HTTPException(status_code=400, detail="Invalid credentials")
         
-        res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email})
-        res = res.json()
-        print("trade login :", res)
-        if 'code' in res and res.get('code') == 400:
-            raise Exception(res.get('error'))
-        # else:
-        user = supabase.auth.get_user(response.session.access_token)
-        print(user.user)
-        return {"access_token": response.session.access_token}
+        smartapi_login_res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email})
+        smartapi_login_res = smartapi_login_res.json()
+
+        if 'code' in smartapi_login_res and smartapi_login_res.get('code') == 400:
+            raise Exception(smartapi_login_res.get('error'))
+        
+        response.set_cookie(
+            key="access_token",
+            value=login_response.session.access_token,
+            httponly=True,          # JS cannot access this cookie
+            secure=True,            # only over HTTPS
+            samesite="strict",      # prevent CSRF
+            max_age=60*15           # 15 minutes expiry
+        )
+        return {"message": "Logged in successfully"}
     except Exception as e:
         return {"error":f"{e}","code":400}
+
 
 @router.post("/user")
 def get_user_email(access_token: accessToken):
     user = supabase.auth.get_user(access_token)
     return user.user if user.user else None
+
+
