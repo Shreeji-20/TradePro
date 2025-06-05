@@ -23,10 +23,20 @@ export const login = async (formdata) => {
     credentials: "include" ,
     headers: {
       "Content-Type": "application/json",
-      credentials: "include", 
     },
     body: JSON.stringify(formdata),
   });
+
+  const res2 = await fetch("http://localhost:8000/trade/login", {
+    method: "POST",
+    credentials: "include" ,
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({"email":formdata.email}),
+  });
+
+  // add confirmation here for res 2
 
   const data = await res.json();
   console.log(data);
@@ -38,9 +48,11 @@ export const login = async (formdata) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email: formdata.email }),
-  });
+  }); 
+  
+  console.log(await response.json())
 
-  if (res.ok && data.access_token) {
+  if (res.ok ) {
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("email", formdata.email);
     return { status: true };

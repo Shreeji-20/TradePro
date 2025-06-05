@@ -115,6 +115,7 @@ const StockOrder = () => {
 
     const res = await fetch("http://localhost:8000/trade/subscribe", {
       method: "POST",
+      credentials:"include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -141,7 +142,7 @@ const StockOrder = () => {
     const intervalIds = stocksList.map((stock) =>
       setInterval(() => {
         console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
-        dispatch(updateStock({ id: stock.id, socketData: liveData }));
+        dispatch(updateStock({ id: stock.id, socketData: liveData,orderId: stock.orderId }));
       }, stock.priceUpdateInterval * 1000)
     );
 

@@ -4,21 +4,23 @@ import { setLiveData } from "../slices/liveDataSlice";
 
 export const useLiveData = () => {
   const dispatch = useDispatch();
-
+  const liveDataRef = useRef({});
   useEffect(() => {
     const fetchLiveData = async () => {
       try {
         const res = await fetch("http://localhost:8000/trade/websocketdata", {
           method: "GET",
+          credentials: "include" ,
           headers: {
             "Content-Type": "application/json",
           },
         });
 
         const response = await res.json();
-
+        
         if (res.ok && response.code == 200) {
-          dispatch(setLiveData({ payload: response.data }));
+          liveDataRef.current = response.data
+          dispatch(setLiveData({ payload: liveDataRef.current }));
         }
 
         if (response.code == 300) {
@@ -26,6 +28,7 @@ export const useLiveData = () => {
             "http://localhost:8000/trade/start-feed",
             {
               method: "POST",
+              credentials: "include" ,
               headers: {
                 "Content-Type": "application/json",
               },

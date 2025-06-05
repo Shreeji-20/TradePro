@@ -76,7 +76,9 @@ class Websocket:
     def start_websocket(self):
 
         def on_error(wsapp, error):
-            logger.error(error)
+            logger.error("Here : ",error)
+            self.close_connection()
+            time.sleep(2)
 
         def on_close(wsapp):
             logger.info("Close")

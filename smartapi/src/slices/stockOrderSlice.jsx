@@ -21,11 +21,13 @@ export const stockOrderSlice = createSlice({
         (stock) => stock.id === action.payload.id
       );
       if (index !== -1) {
+        console.log(action.payload.orderId)
         const limitPrice =
           action.payload.socketData[state.stocksList[index].token];
         state.stocksList[index] = {
           ...state.stocksList[index],
           limitPrice: limitPrice["last_traded_price"] / 100,
+          orderId: action.payload.orderId
         };
       }
     },
@@ -69,6 +71,7 @@ export const checkAndPlaceDueOrders =
             "http://localhost:8000/trade/place-order",
             {
               method: "POST",
+              credentials:"include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 email: localStorage.getItem("email"),
@@ -86,7 +89,53 @@ export const checkAndPlaceDueOrders =
           dispatch(
             updateStock({
               id: stock.id,
-              updates: { orderId: data.order_id },
+              // updates: { orderId: data.order_id },
+              orderId: data.order_id ,
+              socketData: liveData,
+            })
+          );
+        } catch (err) {
+          console.error(`Failed to place order for ${stock.symbol}:`, err);
+        }
+      }
+    }
+  };
+
+export const UpdateOrders =
+  (liveData) => async (dispatch, getState) => {
+    const { stocksList } = getState().stockOrder;
+    const now = new Date();
+    for (const stock of stocksList) {
+      if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
+        try {
+          console.log(
+            "LTP : ",
+            `${liveData[stock.token]["last_traded_price"] / 100}`
+          );
+          const response = await fetch(
+            "http://localhost:8000/trade/update-order",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: localStorage.getItem("email"),
+                orderId: stock.orderId,
+                price: `${liveData[stock.token]["last_traded_price"] / 100}`,
+                // order_type: stock.orderType,
+                // side: stock.side,
+                // symbol: stock.stockSymbol,
+                // quantity: stock.qtyPerLimit,
+              }),
+            }
+          );
+          const data = await response.json();
+          console.log("orderplaces : ", data);
+          // Assuming response includes orderId
+          dispatch(
+            updateStock({
+              id: stock.id,
+              // updates: { orderId: data.order_id },
+              orderId: data.order_id ,
               socketData: liveData,
             })
           );

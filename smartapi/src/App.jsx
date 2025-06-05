@@ -22,7 +22,10 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("access_token");
     setIsAuthenticated(!!token); // Check if token exists on load
+    
   }, []);
+
+  useLiveData()
 
   return (
     <>

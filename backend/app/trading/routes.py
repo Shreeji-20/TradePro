@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException ,Request ,Cookie
 from pydantic import BaseModel
 from app.trading.smartapi_client import SmartAPIClient
 from app.db.supabase_client import supabase
@@ -9,7 +9,7 @@ import json
 from typing import Optional
 from app.auth.jwt_bearer import JWTBearer
 trading_router = APIRouter(dependencies=[Depends(JWTBearer())])  # << secure all routes
-# trading_router = APIRouter()  # << secure all routes
+
 web_socket = None
 
 class OrderRequest(BaseModel):
@@ -82,7 +82,8 @@ def get_client_by_email(email: str):
 @trading_router.post("/login")
 def login(demat: LoginRequest):
     try: 
-        response = supabase.table("Angelone_creds").select('*').eq("email","dhruvisoni2712@gmail.com").execute()
+        
+        response = supabase.table("Angelone_creds").select('*').eq("email",demat.email).execute()
         data = response.data[0]
         client = SmartAPIClient(data['clientId'],data['pin'],data['totp'],data['apikey'])
       
@@ -177,6 +178,7 @@ def get_holdings(email:LoginRequest):
 @trading_router.post("/start-feed")
 def start_feed(email:LoginRequest):
     try:
+        print(email.email)
         global web_socket
         if not web_socket:
             client = get_client_by_email(email.email)

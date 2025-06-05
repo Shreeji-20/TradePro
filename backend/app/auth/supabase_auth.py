@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException ,Response
+from fastapi import APIRouter, HTTPException ,Response,Cookie
 from pydantic import BaseModel , UUID4
 from uuid import UUID
 from app.db.supabase_client import supabase
@@ -55,22 +55,31 @@ def login(response: Response,data: LoginRequest):
         })
         if not login_response.session:
             raise HTTPException(status_code=400, detail="Invalid credentials")
-        
-        smartapi_login_res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email})
-        smartapi_login_res = smartapi_login_res.json()
-
-        if 'code' in smartapi_login_res and smartapi_login_res.get('code') == 400:
-            raise Exception(smartapi_login_res.get('error'))
-        
         response.set_cookie(
             key="access_token",
             value=login_response.session.access_token,
             httponly=True,          # JS cannot access this cookie
-            secure=True,            # only over HTTPS
+            # secure=True,            # only over HTTPS
             samesite="strict",      # prevent CSRF
-            max_age=60*15           # 15 minutes expiry
+            max_age=60*1440           # 24 Hour expiry
         )
-        return {"message": "Logged in successfully"}
+        
+        # smartapi_login_res = requests.post("http://127.0.0.1:8000/trade/login",json={"email": data.email},cookies=Cook)
+        # smartapi_login_res = smartapi_login_res.json()
+
+        # if 'code' in smartapi_login_res and smartapi_login_res.get('code') == 400:
+        #     raise Exception(smartapi_login_res.get('error'))
+        
+        # response.set_cookie(
+        #     key="access_token",
+        #     value=login_response.session.access_token,
+        #     httponly=True,          # JS cannot access this cookie
+        #     # secure=True,            # only over HTTPS
+        #     samesite="strict",      # prevent CSRF
+        #     max_age=60*1440           # 24 Hour expiry
+        # )
+
+        return {"message": "Logged in successfully","access_token":login_response.session.access_token}
     except Exception as e:
         return {"error":f"{e}","code":400}
 

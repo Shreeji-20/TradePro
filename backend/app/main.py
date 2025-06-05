@@ -4,15 +4,16 @@ from app.trading.routes import trading_router
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Trading Backend")
 origins = [
-    "http://localhost:5173",  # your React frontend URL
+    "http://localhost:5173", 
+   
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,           # List of allowed origins
+    allow_origins=origins,           
     allow_credentials=True,
-    allow_methods=["*"],             # Allow all HTTP methods
-    allow_headers=["*"],             # Allow all headers
+    allow_methods=["*"],             
+    allow_headers=["*"],             
 )
 # Include routers
 app.include_router(supabase_auth.router, prefix="/auth")

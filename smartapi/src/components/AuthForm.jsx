@@ -69,7 +69,7 @@ const AuthForm = () => {
     
     const response = await (isLogin ? login(formData) : register(formData));
 
-    
+    console.log(await response.status)
     if (response.status) {
       
       toast.success(
@@ -77,7 +77,9 @@ const AuthForm = () => {
           !isLogin ? `, ${formData.name}` : ""
         }`,
         { duration: 3000 }
+       
       );
+      navigate("/dashboard")
     } else {
       navigate("/login");
       toast.error(response.error || "Authentication failed", {
