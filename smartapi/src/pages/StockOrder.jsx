@@ -60,8 +60,8 @@ const StockOrder = () => {
   useEffect(() => {
     const interval = setInterval(async () => {
       if (Array.isArray(liveDataRef.current) && liveDataRef.current.length > 0)
-        console.log(liveDataRef.current)
-        dispatch(checkAndPlaceDueOrders(liveDataRef.current));
+        console.log(liveDataRef.current);
+      dispatch(checkAndPlaceDueOrders(liveDataRef.current));
     }, 1000); // every 5 seconds
 
     return () => clearInterval(interval);
@@ -72,7 +72,7 @@ const StockOrder = () => {
       stockSymbol: "",
       quantity: "",
       orderType: "MARKET",
-      priceType: "ltp",
+      priceType: "",
       limitPrice: "100.123",
       numOfLimits: "1",
       expiryMinutes: "30",
@@ -115,7 +115,7 @@ const StockOrder = () => {
 
     const res = await fetch("http://localhost:8000/trade/subscribe", {
       method: "POST",
-      credentials:"include",
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
       },
@@ -139,13 +139,21 @@ const StockOrder = () => {
 
   // Update orders
   useEffect(() => {
-    const intervalIds = stocksList.map((stock) =>
-      setInterval(() => {
+    const intervalIds = stocksList.map((stock) => {
+      if (stock.status === "Pending") {
         console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
-        dispatch(updateStock({ id: stock.id, socketData: liveData,orderId: stock.orderId }));
-      }, stock.priceUpdateInterval * 1000)
-    );
-
+        return setInterval(() => {
+          dispatch(
+            updateStock({
+              id: stock.id,
+              socketData: liveData,
+              orderId: stock.orderId,
+            })
+          );
+        }, stock.priceUpdateInterval * 1000);
+      }
+      return null;
+    });
     return () => {
       intervalIds.forEach((id) => clearInterval(id));
     };
@@ -155,10 +163,10 @@ const StockOrder = () => {
   useEffect(() => {
     const timeoutIds = stocksList.map((stock) => {
       if (stock.status === "Pending") {
-        return setTimeout(() => {
-          console.log(`Converting to market ${stock.stockSymbol}`);
+        // console.log(`Converting to market ${stock.stockSymbol}`);
+        return setInterval(() => {
           dispatch(convertToMarketOrder(stock.id));
-        }, stock.expiryMinutes * 60 * 1000);
+        }, 1000);
       }
       return null;
     });
@@ -336,8 +344,12 @@ const StockOrder = () => {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="bid">Bid Price</SelectItem>
-                                <SelectItem value="ask">Ask Price</SelectItem>
+                                <SelectItem value="best_5_buy_data">
+                                  Bid Price
+                                </SelectItem>
+                                <SelectItem value="best_5_sell_data">
+                                  Ask Price
+                                </SelectItem>
                                 <SelectItem value="ltp">
                                   LTP (Last Traded Price)
                                 </SelectItem>

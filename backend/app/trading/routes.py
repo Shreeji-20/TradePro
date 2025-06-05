@@ -59,6 +59,12 @@ class OrderKey(BaseModel):
     
 class GainersLosers(BaseModel):
     datatype:str
+
+class ModifyOrderRequest(BaseModel):
+    email:str
+    orderId:str
+    price:str
+    symbol:str
     
     
 def get_client_by_email(email: str):
@@ -102,7 +108,7 @@ def login(demat: LoginRequest):
 @trading_router.post("/place-order")
 def place_order(order: OrderRequest):
     try:
-        print(order)
+        
         client = get_client_by_email(order.email)
         result = client.place_order(
             order_type=order.order_type,
@@ -111,9 +117,7 @@ def place_order(order: OrderRequest):
             qty=order.quantity,
             product_type = "DELIVERY",
             price = order.price
-            
         )
-        print("Result : ",result)
         if result is not None and 'code' in result and result['code'] == 400:
             raise Exception(result['error'])
         return {"message": "Order placed", "order_id": result}
@@ -121,12 +125,23 @@ def place_order(order: OrderRequest):
         print(traceback.format_exc())
         raise HTTPException(status_code=400, detail=str(e))
 
+@trading_router.post("/update-order")
+def update_order(order:ModifyOrderRequest):
+    try:
+        client = get_client_by_email(order.email)
+        result = client.modify_order(
+            symbol=order.symbol,
+            price = order.price
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
 
 @trading_router.post("/profile")
 def get_profile(email:LoginRequest):
     try:
         client = get_client_by_email(email.email)
-        # client.login()
         result = client.get_profile()
         rms = client.obj.rmsLimit()
         if 'status' in result and result['status'] != True:
@@ -140,7 +155,6 @@ def get_profile(email:LoginRequest):
 def get_orderbook(email:LoginRequest):
     try:
         client = get_client_by_email(email.email)
-        # client.login()
         result = client.obj.orderBook()
         if result['status'] != True:
             raise Exception(result['message'])
@@ -153,7 +167,6 @@ def get_orderbook(email:LoginRequest):
 def get_positions(email:LoginRequest):
     try:
         client = get_client_by_email(email.email)
-        # client.login()
         result = client.obj.position()
         if result['status'] != True:
             raise Exception(result['message'])
@@ -166,7 +179,6 @@ def get_positions(email:LoginRequest):
 def get_holdings(email:LoginRequest):
     try:
         client = get_client_by_email(email.email)
-        # client.login()
         result = client.obj.allholding()
         if result['status'] != True:
             raise Exception(result['message'])
@@ -178,7 +190,6 @@ def get_holdings(email:LoginRequest):
 @trading_router.post("/start-feed")
 def start_feed(email:LoginRequest):
     try:
-        print(email.email)
         global web_socket
         if not web_socket:
             client = get_client_by_email(email.email)
@@ -266,8 +277,6 @@ def search_scrip(scrip:SearchScrip):
     try:
         client = get_client_by_email(scrip.email)
         symbol_list = client.get_symbol_token(scrip.symbol,scrip.exchange)
-        # with open("nifty.nfo.json",'w') as file:
-        #     file.write(json.dumps(symbol_list))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
     

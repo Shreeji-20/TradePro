@@ -21,22 +21,21 @@ export const stockOrderSlice = createSlice({
         (stock) => stock.id === action.payload.id
       );
       if (index !== -1) {
-        console.log(action.payload.orderId)
         const limitPrice =
           action.payload.socketData[state.stocksList[index].token];
         state.stocksList[index] = {
           ...state.stocksList[index],
           limitPrice: limitPrice["last_traded_price"] / 100,
-          orderId: action.payload.orderId
+          orderId: action.payload.orderId,
         };
       }
     },
     convertToMarketOrder: (state, action) => {
       const stock = state.stocksList.find((s) => s.id === action.payload);
-      console.log(`Updating ${stock.stockSymbol} to Market`);
+      console.log(`Converting ${stock.stockSymbol} to Market`);
       if (stock) {
         stock.orderType = "MARKET";
-        stock.price = null; // Optional: remove price field if not relevant for market orders
+        stock.price = "0"; // Optional: remove price field if not relevant for market orders
         stock.status = "Completed";
       }
     },
@@ -60,88 +59,92 @@ export const checkAndPlaceDueOrders =
   (liveData) => async (dispatch, getState) => {
     const { stocksList } = getState().stockOrder;
     const now = new Date();
+    var price = 0;
     for (const stock of stocksList) {
-      if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
+      if (!stock?.orderId && new Date(stock?.timeToPlace) <= now) {
         try {
-          console.log(
-            "LTP : ",
-            `${liveData[stock.token]["last_traded_price"] / 100}`
-          );
+          if (stock?.priceType !== "ltp") {
+            price =
+              liveData[stock?.token][`${stock?.priceType}`][0]["price"] / 100;
+          } else {
+            price = liveData[stock?.token]["last_traded_price"] / 100;
+          }
+
+          console.log("Price : ", `${price}`);
+
           const response = await fetch(
             "http://localhost:8000/trade/place-order",
             {
               method: "POST",
-              credentials:"include",
+              credentials: "include",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 email: localStorage.getItem("email"),
-                order_type: stock.orderType,
-                side: stock.side,
-                symbol: stock.stockSymbol,
-                quantity: stock.qtyPerLimit,
-                price: `${liveData[stock.token]["last_traded_price"] / 100}`,
+                order_type: stock?.orderType,
+                side: stock?.side,
+                symbol: stock?.stockSymbol,
+                quantity: stock?.qtyPerLimit,
+                // price: `${liveData[stock.token]["last_traded_price"] / 100}`,
+                price: `${price}`,
               }),
             }
           );
           const data = await response.json();
-          console.log("orderplaces : ", data);
-          // Assuming response includes orderId
+          console.log("orderplaced : ", data);
           dispatch(
             updateStock({
-              id: stock.id,
-              // updates: { orderId: data.order_id },
-              orderId: data.order_id ,
+              id: stock?.id,
+              orderId: data?.order_id,
               socketData: liveData,
+              price: price,
             })
           );
         } catch (err) {
-          console.error(`Failed to place order for ${stock.symbol}:`, err);
+          console.error(`Failed to place order for ${stock?.symbol}:`, err);
         }
       }
     }
   };
 
-export const UpdateOrders =
-  (liveData) => async (dispatch, getState) => {
-    const { stocksList } = getState().stockOrder;
-    const now = new Date();
-    for (const stock of stocksList) {
-      if (!stock.orderId && new Date(stock.timeToPlace) <= now) {
-        try {
-          console.log(
-            "LTP : ",
-            `${liveData[stock.token]["last_traded_price"] / 100}`
-          );
-          const response = await fetch(
-            "http://localhost:8000/trade/update-order",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: localStorage.getItem("email"),
-                orderId: stock.orderId,
-                price: `${liveData[stock.token]["last_traded_price"] / 100}`,
-                // order_type: stock.orderType,
-                // side: stock.side,
-                // symbol: stock.stockSymbol,
-                // quantity: stock.qtyPerLimit,
-              }),
-            }
-          );
-          const data = await response.json();
-          console.log("orderplaces : ", data);
-          // Assuming response includes orderId
-          dispatch(
-            updateStock({
-              id: stock.id,
-              // updates: { orderId: data.order_id },
-              orderId: data.order_id ,
-              socketData: liveData,
-            })
-          );
-        } catch (err) {
-          console.error(`Failed to place order for ${stock.symbol}:`, err);
+export const UpdateOrders = (liveData) => async (dispatch, getState) => {
+  const { stocksList } = getState().stockOrder;
+  var price = 0;
+  for (const stock of stocksList) {
+    if (stock?.orderId) {
+      try {
+        if (stock?.priceType !== "ltp") {
+          price =
+            liveData[stock?.token][`${stock?.priceType}`][0]["price"] / 100;
+        } else {
+          price = liveData[stock?.token]["last_traded_price"] / 100;
         }
+        const response = await fetch(
+          "http://localhost:8000/trade/update-order",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: localStorage.getItem("email"),
+              orderId: stock?.orderId,
+              price: `${price}`,
+            }),
+          }
+        );
+        const data = await response.json();
+        console.log("Order_Updated : ", data);
+
+        dispatch(
+          updateStock({
+            id: stock.id,
+            orderId: data.order_id,
+            socketData: liveData,
+            price: price,
+          })
+        );
+      } catch (err) {
+        console.error(`Failed to update order for ${stock.symbol}:`, err);
       }
     }
-  };
+  }
+};
