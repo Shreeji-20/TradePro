@@ -60,11 +60,7 @@ class OrderKey(BaseModel):
 class GainersLosers(BaseModel):
     datatype:str
 
-class ModifyOrderRequest(BaseModel):
-    email:str
-    orderId:str
-    price:str
-    symbol:str
+
     
     
 def get_client_by_email(email: str):
@@ -125,15 +121,30 @@ def place_order(order: OrderRequest):
         print(traceback.format_exc())
         raise HTTPException(status_code=400, detail=str(e))
 
+
+class ModifyOrderRequest(BaseModel):
+    email:str
+    orderId:str
+    price:str
+    symbol:str
+    orderType:str
+    exchange:str
+    quantity:int
+
 @trading_router.post("/update-order")
 def update_order(order:ModifyOrderRequest):
     try:
         client = get_client_by_email(order.email)
         result = client.modify_order(
-            symbol=order.symbol,
-            price = order.price
+            symbol = order.symbol,
+            price = order.price,
+            orderId = order.orderId,
+            orderType = order.orderType,
+            quantity= order.quantity,
+            exchange= order.exchange
         )
-        
+        print("Update Result : ",result)
+        return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

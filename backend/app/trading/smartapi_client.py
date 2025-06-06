@@ -73,11 +73,29 @@ class SmartAPIClient:
         except Exception as e:
           return {"error":f"{e}","code":400}
       
-    def modify_order(self,symbol,orderId,price):
+    def modify_order(self,symbol,orderId,price,orderType,quantity,exchange):
+        #  symbol = order.symbol,
+        #     price = order.price,
+        #     orderId = order.orderId,
+        #     orderType = order.orderType,
+        #     quantity= order.quantity,
+        #     exchange= order.exchange
         symbol_token = self.get_symbol_token(symbol)
         params = {
-            
-        }
+            "variety":"NORMAL",
+            "orderid":str(orderId) or "",
+            "ordertype":orderType or "MARKET",
+            "producttype":"DELIVERY",
+            "duration":"DAY",
+            "price":str(price) or "0",
+            "quantity":quantity or "1",
+            "tradingsymbol":symbol or "SBIN-EQ",
+            "symboltoken":symbol_token or "3045",
+            "exchange":exchange or "NSE"
+            }
+        order = self.obj.modifyOrder(params)
+        print("Update order response : ",order)
+        return order
     def get_profile(self):
         res = self.obj.getProfile(self.obj.refresh_token)
         # print(res)

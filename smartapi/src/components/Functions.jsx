@@ -1,3 +1,4 @@
+import {useLiveData} from "../hooks/use_live_data"
 export const register = async (formdata) => {
   console.log("Form Data : ", formdata);
   const res = await fetch("http://localhost:8000/auth/signup", {
@@ -40,7 +41,7 @@ export const login = async (formdata) => {
     console.error("Angel one account Login Failed");
   }
 
-  const response = await fetch("http://localhost:8000/trade/start-feed", {
+   const response = await fetch("http://localhost:8000/trade/start-feed", {
     method: "POST",
     credentials: "include",
     headers: {
@@ -58,6 +59,7 @@ export const login = async (formdata) => {
   if (res.ok) {
     localStorage.setItem("access_token", data.access_token);
     localStorage.setItem("email", formdata.email);
+    // useLiveData()
     return { status: true };
   } else {
     console.error("Login failed", data.error);

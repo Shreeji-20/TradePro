@@ -31,9 +31,9 @@ export const stockOrderSlice = createSlice({
       }
     },
     convertToMarketOrder: (state, action) => {
-      const stock = state.stocksList.find((s) => s.id === action.payload);
-      console.log(`Converting ${stock.stockSymbol} to Market`);
-      if (stock) {
+      const stock = state.stocksList.find((s) => s?.id === action?.payload);
+      if (stock && stock?.status === "Pending") {
+        console.log(`Converting ${stock?.stockSymbol} to Market`);
         stock.orderType = "MARKET";
         stock.price = "0"; // Optional: remove price field if not relevant for market orders
         stock.status = "Completed";
@@ -69,7 +69,6 @@ export const checkAndPlaceDueOrders =
           } else {
             price = liveData[stock?.token]["last_traded_price"] / 100;
           }
-
           console.log("Price : ", `${price}`);
 
           const response = await fetch(
@@ -83,14 +82,15 @@ export const checkAndPlaceDueOrders =
                 order_type: stock?.orderType,
                 side: stock?.side,
                 symbol: stock?.stockSymbol,
-                quantity: stock?.qtyPerLimit,
-                // price: `${liveData[stock.token]["last_traded_price"] / 100}`,
+                quantity: stock?.qtyPerLimit,  
                 price: `${price}`,
               }),
             }
           );
+
           const data = await response.json();
           console.log("orderplaced : ", data);
+
           dispatch(
             updateStock({
               id: stock?.id,
@@ -105,46 +105,3 @@ export const checkAndPlaceDueOrders =
       }
     }
   };
-
-export const UpdateOrders = (liveData) => async (dispatch, getState) => {
-  const { stocksList } = getState().stockOrder;
-  var price = 0;
-  for (const stock of stocksList) {
-    if (stock?.orderId) {
-      try {
-        if (stock?.priceType !== "ltp") {
-          price =
-            liveData[stock?.token][`${stock?.priceType}`][0]["price"] / 100;
-        } else {
-          price = liveData[stock?.token]["last_traded_price"] / 100;
-        }
-        const response = await fetch(
-          "http://localhost:8000/trade/update-order",
-          {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: localStorage.getItem("email"),
-              orderId: stock?.orderId,
-              price: `${price}`,
-            }),
-          }
-        );
-        const data = await response.json();
-        console.log("Order_Updated : ", data);
-
-        dispatch(
-          updateStock({
-            id: stock.id,
-            orderId: data.order_id,
-            socketData: liveData,
-            price: price,
-          })
-        );
-      } catch (err) {
-        console.error(`Failed to update order for ${stock.symbol}:`, err);
-      }
-    }
-  }
-};

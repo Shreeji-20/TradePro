@@ -37,6 +37,7 @@ import {
   updateStock,
   convertToMarketOrder,
   checkAndPlaceDueOrders,
+  // UpdateOrders
 } from "../slices/stockOrderSlice";
 
 const StockOrder = () => {
@@ -44,6 +45,7 @@ const StockOrder = () => {
   const stocksList = useSelector((state) => state.stockOrder.stocksList);
   const liveData = useSelector((state) => state.liveData.data);
   const liveDataRef = useRef(liveData);
+  const intervalMapRef = useRef({});
   const dispatch = useDispatch();
   const exchange_map_type = {
     NSE: 1,
@@ -52,20 +54,6 @@ const StockOrder = () => {
     BFO: 4,
   };
 
-  useEffect(() => {
-    liveDataRef.current = liveData;
-  }, [liveData]);
-
-  // Check and plce due orders
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      if (Array.isArray(liveDataRef.current) && liveDataRef.current.length > 0)
-        console.log(liveDataRef.current);
-      dispatch(checkAndPlaceDueOrders(liveDataRef.current));
-    }, 1000); // every 5 seconds
-
-    return () => clearInterval(interval);
-  }, [dispatch]);
 
   const form = useForm({
     defaultValues: {
@@ -137,39 +125,96 @@ const StockOrder = () => {
     form.reset();
   };
 
-  // Update orders
+
   useEffect(() => {
-    const intervalIds = stocksList.map((stock) => {
-      if (stock.status === "Pending") {
-        console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
-        return setInterval(() => {
-          dispatch(
-            updateStock({
-              id: stock.id,
-              socketData: liveData,
-              orderId: stock.orderId,
-            })
-          );
+    liveDataRef.current = liveData;
+  }, [liveData]);
+
+  // Check and plce due orders
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      if (Array.isArray(liveDataRef.current) && liveDataRef.current.length > 0)
+        console.log(liveDataRef.current);
+      dispatch(checkAndPlaceDueOrders(liveDataRef.current));
+    }, 1000); // every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
+
+  // Update orders
+
+  useEffect(() => {
+    stocksList.forEach((stock) => {
+      const isPending = stock?.status === "Pending";
+      const existingInterval = intervalMapRef.current[stock.id];
+
+      if (isPending && !existingInterval) {
+        // Start a new interval if pending and no interval exists
+        const intervalId = setInterval(async () => {
+          console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
+
+          try {
+            const response = await fetch("http://localhost:8000/trade/update-order", {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                email: localStorage.getItem("email"),
+                orderId: stock?.orderId,
+                price: `${
+                  stock?.priceType !== "ltp"
+                    ? liveDataRef.current[stock?.token]?.[stock?.priceType]?.[0]?.price / 100
+                    : liveDataRef.current[stock?.token]?.last_traded_price / 100
+                }`,
+                symbol: stock?.stockSymbol,
+                quantity: stock?.quantity,
+                orderType: stock?.orderType,
+                exchange: stock?.exchange,
+              }),
+            });
+
+            const data = await response.json();
+            console.log("Updated order response: ", data);
+
+            dispatch(
+              updateStock({
+                id: stock.id,
+                socketData: liveData,
+                orderId: stock.orderId,
+              })
+            );
+          } catch (error) {
+            console.error("Error updating stock:", error);
+          }
         }, stock.priceUpdateInterval * 1000);
+
+        intervalMapRef.current[stock.id] = intervalId;
       }
-      return null;
+
+      // If not pending and interval exists, clear it
+      if (!isPending && existingInterval) {
+        clearInterval(existingInterval);
+        delete intervalMapRef.current[stock.id];
+      }
     });
+
+    // Cleanup on component unmount
     return () => {
-      intervalIds.forEach((id) => clearInterval(id));
+      Object.values(intervalMapRef.current).forEach(clearInterval);
+      intervalMapRef.current = {};
     };
   }, [stocksList, dispatch]);
 
+
   // Convert to market order
   useEffect(() => {
-    const timeoutIds = stocksList.map((stock) => {
-      if (stock.status === "Pending") {
-        // console.log(`Converting to market ${stock.stockSymbol}`);
-        return setInterval(() => {
+    
+    const timeoutIds = stocksList.map((stock) => 
+        setTimeout(() => {
           dispatch(convertToMarketOrder(stock.id));
-        }, 1000);
-      }
-      return null;
-    });
+        }, 10000)
+    );
 
     return () => {
       timeoutIds.forEach((id) => id && clearTimeout(id));
