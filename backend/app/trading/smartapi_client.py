@@ -74,12 +74,6 @@ class SmartAPIClient:
           return {"error":f"{e}","code":400}
       
     def modify_order(self,symbol,orderId,price,orderType,quantity,exchange):
-        #  symbol = order.symbol,
-        #     price = order.price,
-        #     orderId = order.orderId,
-        #     orderType = order.orderType,
-        #     quantity= order.quantity,
-        #     exchange= order.exchange
         symbol_token = self.get_symbol_token(symbol)
         params = {
             "variety":"NORMAL",

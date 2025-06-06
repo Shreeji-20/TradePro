@@ -13,7 +13,7 @@ import Profile from "./pages/Profile";
 import { useLiveData } from "./hooks/use_live_data";
 import StockOrder from "./pages/StockOrder";
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem("access_token");
@@ -25,6 +25,9 @@ function App() {
     
   }, []);
 
+  // if (isAuthenticated){
+  //   useLiveData()
+  // }
   useLiveData()
   // onlU
 

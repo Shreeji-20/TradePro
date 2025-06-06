@@ -130,6 +130,7 @@ const StockOrder = () => {
     liveDataRef.current = liveData;
   }, [liveData]);
 
+
   // Check and plce due orders
   useEffect(() => {
     const interval = setInterval(async () => {
@@ -141,9 +142,27 @@ const StockOrder = () => {
     return () => clearInterval(interval);
   }, [dispatch]);
 
+  useEffect(() => {
+    if (!stocksList || stocksList.length === 0) return;if (!stocksList || stocksList.length === 0) return;
+    const timeoutIds = stocksList.map((stock) => 
+      setTimeout(() => {
+          console.log("Time out creted for stock : ",stock)
+          console.log(stock)
+          dispatch(convertToMarketOrder(stock.id));
+        }, 10000)
+    );
+    // setTimeout(() => {
+      
+    // }, timeout);
+
+    return () => {
+      console.log("Cleaning up timeouts")
+      timeoutIds.forEach((id) => id && clearTimeout(id));
+    };
+  }, [stocksList, dispatch]);
+
 
   // Update orders
-
   useEffect(() => {
     stocksList.forEach((stock) => {
       const isPending = stock?.status === "Pending";
@@ -179,9 +198,10 @@ const StockOrder = () => {
 
             dispatch(
               updateStock({
-                id: stock.id,
-                socketData: liveData,
-                orderId: stock.orderId,
+                id: stock?.id,
+                socketData: liveDataRef.current,
+                orderId: stock?.orderId,
+                lastUpdated: new Date().toISOString()
               })
             );
           } catch (error) {
@@ -201,6 +221,7 @@ const StockOrder = () => {
 
     // Cleanup on component unmount
     return () => {
+      console.log("cleaning up update order intervals")
       Object.values(intervalMapRef.current).forEach(clearInterval);
       intervalMapRef.current = {};
     };
@@ -208,18 +229,7 @@ const StockOrder = () => {
 
 
   // Convert to market order
-  useEffect(() => {
-    
-    const timeoutIds = stocksList.map((stock) => 
-        setTimeout(() => {
-          dispatch(convertToMarketOrder(stock.id));
-        }, 10000)
-    );
 
-    return () => {
-      timeoutIds.forEach((id) => id && clearTimeout(id));
-    };
-  }, [stocksList, dispatch]);
 
   return (
     <div>

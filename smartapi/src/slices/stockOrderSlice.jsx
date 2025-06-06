@@ -32,8 +32,8 @@ export const stockOrderSlice = createSlice({
     },
     convertToMarketOrder: (state, action) => {
       const stock = state.stocksList.find((s) => s?.id === action?.payload);
+      console.log(`Converting ${stock?.stockSymbol} to Market`);
       if (stock && stock?.status === "Pending") {
-        console.log(`Converting ${stock?.stockSymbol} to Market`);
         stock.orderType = "MARKET";
         stock.price = "0"; // Optional: remove price field if not relevant for market orders
         stock.status = "Completed";
@@ -60,6 +60,7 @@ export const checkAndPlaceDueOrders =
     const { stocksList } = getState().stockOrder;
     const now = new Date();
     var price = 0;
+    // console.log("Check and place due orders function invoked");
     for (const stock of stocksList) {
       if (!stock?.orderId && new Date(stock?.timeToPlace) <= now) {
         try {
@@ -69,7 +70,7 @@ export const checkAndPlaceDueOrders =
           } else {
             price = liveData[stock?.token]["last_traded_price"] / 100;
           }
-          console.log("Price : ", `${price}`);
+          
 
           const response = await fetch(
             "http://localhost:8000/trade/place-order",
