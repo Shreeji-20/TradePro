@@ -37,7 +37,6 @@ import {
   updateStock,
   convertToMarketOrder,
   checkAndPlaceDueOrders,
-  // UpdateOrders
 } from "../slices/stockOrderSlice";
 
 const StockOrder = () => {
@@ -46,6 +45,7 @@ const StockOrder = () => {
   const liveData = useSelector((state) => state.liveData.data);
   const liveDataRef = useRef(liveData);
   const intervalMapRef = useRef({});
+  const timeoutMapRef = useRef({});
   const dispatch = useDispatch();
   const exchange_map_type = {
     NSE: 1,
@@ -53,7 +53,6 @@ const StockOrder = () => {
     BSE: 3,
     BFO: 4,
   };
-
 
   const form = useForm({
     defaultValues: {
@@ -125,11 +124,9 @@ const StockOrder = () => {
     form.reset();
   };
 
-
   useEffect(() => {
     liveDataRef.current = liveData;
   }, [liveData]);
-
 
   // Check and plce due orders
   useEffect(() => {
@@ -143,28 +140,23 @@ const StockOrder = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    if (!stocksList || stocksList.length === 0) return;if (!stocksList || stocksList.length === 0) return;
-    const timeoutIds = stocksList.map((stock) => 
-      setTimeout(() => {
-          console.log("Time out creted for stock : ",stock)
-          console.log(stock)
-          dispatch(convertToMarketOrder(stock.id));
-        }, 10000)
-    );
-    // setTimeout(() => {
-      
-    // }, timeout);
-
-    return () => {
-      console.log("Cleaning up timeouts")
-      timeoutIds.forEach((id) => id && clearTimeout(id));
-    };
+    if (!stocksList || stocksList.length === 0) return;
+    stocksList.forEach((stock) => {
+      if (!stock?.orderId) return;
+      const existingInterval = timeoutMapRef.current[stock.id];
+      if (!existingInterval) {
+        const timeoutId = setTimeout(() => {
+          dispatch(convertToMarketOrder(stock?.id));
+        }, stock?.expiryMinutes * 1000);
+        timeoutMapRef.current[stock?.id] = timeoutId;
+      }
+    });
   }, [stocksList, dispatch]);
-
 
   // Update orders
   useEffect(() => {
     stocksList.forEach((stock) => {
+      if (!stock?.orderId) return;
       const isPending = stock?.status === "Pending";
       const existingInterval = intervalMapRef.current[stock.id];
 
@@ -174,24 +166,30 @@ const StockOrder = () => {
           console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
 
           try {
-            const response = await fetch("http://localhost:8000/trade/update-order", {
-              method: "POST",
-              credentials: "include",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: localStorage.getItem("email"),
-                orderId: stock?.orderId,
-                price: `${
-                  stock?.priceType !== "ltp"
-                    ? liveDataRef.current[stock?.token]?.[stock?.priceType]?.[0]?.price / 100
-                    : liveDataRef.current[stock?.token]?.last_traded_price / 100
-                }`,
-                symbol: stock?.stockSymbol,
-                quantity: stock?.quantity,
-                orderType: stock?.orderType,
-                exchange: stock?.exchange,
-              }),
-            });
+            const response = await fetch(
+              "http://localhost:8000/trade/update-order",
+              {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: localStorage.getItem("email"),
+                  orderId: stock?.orderId,
+                  price: `${
+                    stock?.priceType !== "ltp"
+                      ? liveDataRef.current[stock?.token]?.[
+                          stock?.priceType
+                        ]?.[0]?.price / 100
+                      : liveDataRef.current[stock?.token]?.last_traded_price /
+                        100
+                  }`,
+                  symbol: stock?.stockSymbol,
+                  quantity: stock?.quantity,
+                  orderType: stock?.orderType,
+                  exchange: stock?.exchange,
+                }),
+              }
+            );
 
             const data = await response.json();
             console.log("Updated order response: ", data);
@@ -201,7 +199,7 @@ const StockOrder = () => {
                 id: stock?.id,
                 socketData: liveDataRef.current,
                 orderId: stock?.orderId,
-                lastUpdated: new Date().toISOString()
+                lastUpdated: new Date().toISOString(),
               })
             );
           } catch (error) {
@@ -213,22 +211,18 @@ const StockOrder = () => {
       }
 
       // If not pending and interval exists, clear it
-      if (!isPending && existingInterval) {
+      if ((!isPending && existingInterval) || !stock?.orderId) {
         clearInterval(existingInterval);
         delete intervalMapRef.current[stock.id];
       }
     });
 
-    // Cleanup on component unmount
     return () => {
-      console.log("cleaning up update order intervals")
+      // console.log("cleaning up update order intervals");
       Object.values(intervalMapRef.current).forEach(clearInterval);
       intervalMapRef.current = {};
     };
   }, [stocksList, dispatch]);
-
-
-
 
   return (
     <div>

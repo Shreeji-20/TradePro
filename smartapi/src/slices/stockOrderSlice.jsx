@@ -10,6 +10,7 @@ export const stockOrderSlice = createSlice({
   reducers: {
     addStock: (state, action) => {
       state.stocksList.push(action.payload);
+      console.log("New Stock Added : ", action.payload);
     },
     removeStock: (state, action) => {
       state.stocksList = state.stocksList.filter(
@@ -70,7 +71,6 @@ export const checkAndPlaceDueOrders =
           } else {
             price = liveData[stock?.token]["last_traded_price"] / 100;
           }
-          
 
           const response = await fetch(
             "http://localhost:8000/trade/place-order",
@@ -83,7 +83,7 @@ export const checkAndPlaceDueOrders =
                 order_type: stock?.orderType,
                 side: stock?.side,
                 symbol: stock?.stockSymbol,
-                quantity: stock?.qtyPerLimit,  
+                quantity: stock?.qtyPerLimit,
                 price: `${price}`,
               }),
             }

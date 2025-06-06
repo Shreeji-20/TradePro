@@ -96,7 +96,7 @@ def login(demat: LoginRequest):
         else:
             raise Exception(res.get("error"))
     except Exception as e:
-        # print(e)
+        
         print(traceback.format_exc())
         return {"error":f"{e}","code":400}
 
