@@ -228,7 +228,6 @@ const StockOrder = () => {
   }, [stocksList, dispatch]);
 
 
-  // Convert to market order
 
 
   return (
