@@ -1,4 +1,4 @@
-import { useLiveData } from "../../hooks/use_live_data";
+// import { useLiveData } from "../../hooks/use_live_data";
 import IndexCard from "./IndexCard";
 import { useSelector } from "react-redux";
 

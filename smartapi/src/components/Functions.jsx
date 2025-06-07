@@ -1,4 +1,3 @@
-import {useLiveData} from "../hooks/use_live_data"
 export const register = async (formdata) => {
   console.log("Form Data : ", formdata);
   const res = await fetch("http://localhost:8000/auth/signup", {

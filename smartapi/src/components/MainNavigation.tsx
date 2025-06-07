@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "../lib/utils";
 import { User, List, Settings } from "lucide-react";
-
+import ThemeToggle from "./toogle_theme";
 const MainNavigation = () => {
   const location = useLocation();
 
@@ -17,6 +17,7 @@ const MainNavigation = () => {
     <nav className="bg-white dark:bg-gray-900 shadow-sm">
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 justify-between items-center">
+
           <div className="flex items-center">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
@@ -39,8 +40,10 @@ const MainNavigation = () => {
                   {link.name}
                 </Link>
               ))}
+              <ThemeToggle/>
             </div>
           </div>
+
           <div className="hidden md:ml-4 md:flex md:items-center">
             <Link
               to="/profile"
@@ -53,6 +56,7 @@ const MainNavigation = () => {
               <User className="h-5 w-5" />
             </Link>
           </div>
+
           <div className="md:hidden flex items-center">
             <div className="flex flex-col">
               <div className="flex space-x-4">

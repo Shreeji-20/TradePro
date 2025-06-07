@@ -10,11 +10,11 @@ import { Toaster } from "sonner";
 import MainNavigation from "./components/MainNavigation";
 import OrderBook from "./pages/OrderBook";
 import Profile from "./pages/Profile";
-import { useLiveData } from "./hooks/use_live_data";
+import { UseLiveData } from "./hooks/use_live_data";
 import StockOrder from "./pages/StockOrder";
+
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
   const PrivateRoute = ({ children }) => {
     const token = localStorage.getItem("access_token");
     return token ? children : <Navigate to="/login" replace />;
@@ -25,10 +25,11 @@ function App() {
     
   }, []);
 
+  
   // if (isAuthenticated){
   //   useLiveData()
   // }
-  useLiveData()
+  // useLiveData()
   // onlU
 
 
@@ -51,6 +52,7 @@ function App() {
           element={
             <PrivateRoute>
               <MainNavigation />
+              <UseLiveData />
               <Dashboard />
             </PrivateRoute>
           }
@@ -75,6 +77,7 @@ function App() {
           path="/stockorder"
           element={
             <PrivateRoute>
+              <UseLiveData />
               <StockOrder />
             </PrivateRoute>
           }

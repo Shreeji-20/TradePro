@@ -1,6 +1,7 @@
 import MarketOverview from "../components/dashboard/MarketOverview";
 import IndexChart from "../components/dashboard/IndexChart";
 const Dashboard = () => {
+  
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* <DashboardHeader /> */}

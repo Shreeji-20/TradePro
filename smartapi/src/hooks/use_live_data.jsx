@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useEffect, useRef } from "react";
+import { useDispatch } from "react-redux";
 import { setLiveData } from "../slices/liveDataSlice";
 
-export const useLiveData = () => {
+export const UseLiveData = () => {
   const dispatch = useDispatch();
   const liveDataRef = useRef({});
   useEffect(() => {
@@ -36,6 +36,10 @@ export const useLiveData = () => {
             }
           );
         }
+
+        // else{
+
+        // }
       } catch (err) {
         console.error("Error fetching live data:", err);
       }
@@ -43,6 +47,15 @@ export const useLiveData = () => {
 
     const interval = setInterval(fetchLiveData, 500); // Fetch every second
     console.log("Started fetching live data");
-    // return () => clearInterval(interval);
+    return () => {
+      console.log("Stopped live data")
+      clearInterval(interval)};
   }, []);
+
+  return (
+    <>
+    <p>Started Live feed</p>
+  
+    </>
+  )
 };

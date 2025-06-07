@@ -5,7 +5,7 @@ import { ArrowUp, ArrowDown, TrendingUp } from "lucide-react";
 const IndexCard = ({ name, value, change, changePercentage, isPositive }) => {
   return (
     // <div className="transition transform duration-300 hover:-translate-y-2 hover:shadow-xl rounded-2xl p-4 bg-white">
-    <Card className="overflow-hidden transition transform duration-300 hover:-translate-y-2 hover:shadow-xl rounded-2xl p-2 bg-white">
+    <Card className="overflow-hidden transition transform duration-300 hover:-translate-y-2 hover:shadow-xl rounded-2xl p-2">
       <CardContent className="p-4">
         <div className="flex items-center justify-between ">
           <div className="flex items-center">

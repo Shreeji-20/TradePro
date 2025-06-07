@@ -1,13 +1,10 @@
-from SmartApi import SmartWebSocket
 from SmartApi.smartWebSocketV2 import SmartWebSocketV2
 from logzero import logger
 from collections import defaultdict
 import os
-from queue import Queue ,Empty
+from queue import Queue 
 import time
 import json
-sws = None
-# live_data_queue = defaultdict(Queue)
 
 
 class Websocket:
@@ -31,8 +28,6 @@ class Websocket:
             print("Error fetching latest data:", e)
     
         return latest_data
-        
-        # return {"message": "No new data in socket queue"}
     
     def on_open(self,wsapp):
     
@@ -52,29 +47,23 @@ class Websocket:
             self.sws.subscribe(correlation_id, mode, token_list)
     
     def close_connection(self):
-        # global sws
-            self.shutdown_requested = True
-            self.sws.close_connection()
-            # self.sws.close_connection()
+        self.shutdown_requested = True
+        self.sws.close_connection()
+           
         
     def on_data(self,wsapp, message):
-            try:
-                # logger.info(message)
-                data = message if isinstance(message, dict) else json.loads(message)
-                token = data.get("token")
-                if token:
-                    self.live_data_dict[f'{token}'] = data
-                    self.live_data_queue[token].put(data)
-                    with open("sampledata.txt","a") as file:
-                        file.write(str(message))
-                else:
-                    logger.warning("Token not found in data: {}".format(data))
-
-            except Exception as e:
-                print(e)
+        try:
+            data = message if isinstance(message, dict) else json.loads(message)
+            token = data.get("token")
+            if token:
+                self.live_data_dict[f'{token}'] = data
+                self.live_data_queue[token].put(data)
+            else:
+                logger.warning("Token not found in data: {}".format(data))
+        except Exception as e:
+            print(e)
             
     def start_websocket(self):
-
         def on_error(wsapp, error):
             logger.error("Here : ",error)
             self.close_connection()
@@ -87,7 +76,6 @@ class Websocket:
         self.sws.on_data = self.on_data
         self.sws.on_error = on_error
         self.sws.on_close = on_close
-        # self.sws.connect()
         while not self.shutdown_requested:
             try:
                 self.ws = self.sws.connect()  # connect to websocket

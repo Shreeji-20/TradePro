@@ -38,8 +38,8 @@ import {
   convertToMarketOrder,
   checkAndPlaceDueOrders,
 } from "../slices/stockOrderSlice";
-
 const StockOrder = () => {
+  
   const [isAddingStock, setIsAddingStock] = useState(false);
   const stocksList = useSelector((state) => state.stockOrder.stocksList);
   const liveData = useSelector((state) => state.liveData.data);
@@ -52,6 +52,18 @@ const StockOrder = () => {
     NFO: 2,
     BSE: 3,
     BFO: 4,
+  };
+  const getStatusStyle = (status) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400";
+      case "pending":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400";
+      case "cancelled":
+        return "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+    }
   };
 
   const form = useForm({
@@ -161,6 +173,7 @@ const StockOrder = () => {
       const existingInterval = intervalMapRef.current[stock.id];
 
       if (isPending && !existingInterval) {
+
         // Start a new interval if pending and no interval exists
         const intervalId = setInterval(async () => {
           console.log(`Updating stock ${stock.stockSymbol} to latest ltp`);
@@ -223,6 +236,7 @@ const StockOrder = () => {
       intervalMapRef.current = {};
     };
   }, [stocksList, dispatch]);
+
 
   return (
     <div>
@@ -522,26 +536,26 @@ const StockOrder = () => {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Symbol</TableHead>
-                      <TableHead>Quantity</TableHead>
-                      <TableHead>Order Type</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Limits</TableHead>
-                      <TableHead>Qty/Limit</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Expiry</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead className="text-center">Symbol</TableHead>
+                      <TableHead className="text-center">Quantity</TableHead>
+                      <TableHead className="text-center">Order Type</TableHead>
+                      <TableHead className="text-center">Price</TableHead>
+                      <TableHead className="text-center">Limits</TableHead>
+                      <TableHead className="text-center">Qty/Limit</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Expiry</TableHead>
+                      <TableHead className="text-center">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {stocksList.map((stock) => (
-                      <TableRow key={stock.id}>
-                        <TableCell className="font-medium">
+                      <TableRow key={stock.id} className="border-2 border-red-500">
+                        <TableCell className="font-medium text-center">
                           {stock.stockSymbol}
                         </TableCell>
-                        <TableCell>{stock.quantity}</TableCell>
-                        <TableCell>{stock.orderType}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">{stock.quantity}</TableCell>
+                        <TableCell className="text-center">{stock.orderType}</TableCell>
+                        <TableCell className="text-center">
                           ₹{stock.limitPrice}
                           {stock.currentPrice && (
                             <div className="text-xs text-gray-500">
@@ -549,8 +563,8 @@ const StockOrder = () => {
                             </div>
                           )}
                         </TableCell>
-                        <TableCell>{stock.numOfLimits}</TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">{stock.numOfLimits}</TableCell>
+                        <TableCell className="text-center">
                           {stock.qtyPerLimit}
                           {stock.remainingQty > 0 && (
                             <span className="text-xs text-gray-500">
@@ -559,14 +573,22 @@ const StockOrder = () => {
                             </span>
                           )}
                         </TableCell>
-                        <TableCell>{stock.status}</TableCell>
-                        <TableCell>
-                          {stock.expiryMinutes} min
+                        <TableCell className="text-center"> 
+                          <span
+                              className={`px-2 py-1 rounded-full text-xs ${getStatusStyle(
+                                stock.status
+                              )}`}
+                            >
+                              {stock.status}
+                            </span>
+                            </TableCell>
+                        <TableCell className="text-center">
+                          {stock.expiryMinutes} sec
                           <div className="text-xs text-gray-500">
-                            Updates every {stock.priceUpdateInterval} min
+                            Updates every {stock.priceUpdateInterval} sec
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="text-center">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -583,7 +605,7 @@ const StockOrder = () => {
             </CardContent>
           </Card>
         ) : (
-          <div className="text-center py-8 border rounded-lg bg-gray-50">
+          <div className="text-center py-8 border rounded-lg bg-gray-50 dark:bg-gray-900">
             <p className="text-gray-500">
               No stocks added yet. Click "Add New Stock" to get started.
             </p>

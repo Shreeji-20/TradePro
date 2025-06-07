@@ -66,6 +66,7 @@ export const checkAndPlaceDueOrders =
       if (!stock?.orderId && new Date(stock?.timeToPlace) <= now) {
         try {
           if (stock?.priceType !== "ltp") {
+            console.log("Live data : ",liveData)
             price =
               liveData[stock?.token][`${stock?.priceType}`][0]["price"] / 100;
           } else {
@@ -91,6 +92,12 @@ export const checkAndPlaceDueOrders =
 
           const data = await response.json();
           console.log("orderplaced : ", data);
+          if (data?.status_code === 400){
+            dispatch(
+              removeStock({id: stock?.id})
+            )
+            
+          } 
 
           dispatch(
             updateStock({

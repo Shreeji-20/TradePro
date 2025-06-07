@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import MainNavigation from "../components/MainNavigation";
+import { set } from "react-hook-form";
 
 const OrderBook = () => {
   const [filter, setFilter] = useState("");
@@ -92,6 +93,25 @@ const OrderBook = () => {
     },
   ];
 
+  useEffect(()=>{
+    setInterval(async ()=>{
+      const res = await fetch("http://localhost:8000/trade/subscribe", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          symbol: newStock.stockSymbol.trim(),
+          mode: 3,
+          exchangeType: exchange_map_type[newStock.exchange],
+          correlation_id: `${newStock.stockSymbol}add123`,
+          exchange: newStock.exchange,
+          email: localStorage.getItem("email"),
+        }),
+      });
+    }, 1000)
+  })
   const filteredOrders = filter
     ? orders.filter(
         (order) =>

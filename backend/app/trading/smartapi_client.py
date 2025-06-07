@@ -52,6 +52,8 @@ class SmartAPIClient:
 
     def place_order(self, symbol, qty, side, price="0",order_type="MARKET", product_type="DELIVERY"):
         try:
+            if order_type == "LIMIT" and price == "0":
+                raise Exception("Price should be greater than 0 for limit orders")
             symbol_token = self.get_symbol_token(symbol)
             params = {
                 "variety": "NORMAL",
@@ -68,6 +70,7 @@ class SmartAPIClient:
                 "quantity": f"{qty}"
             }
             order = self.obj.placeOrder(params)
+            print("orderhere : ",order)
             if order is not None:
                 return order
         except Exception as e:
